@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NFC z dynamicznym dodawaniem akcji</title>
+  <style>
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      gap: 15px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #status {
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      color: #3b82f6;
+    }
+    #actions button {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #3b82f6;
+      color: white;
+      transition: background 0.3s ease;
+      width: 250px;
+      margin-bottom: 10px;
+    }
+    #actions button:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>NFC Action Hub z czytnikiem</h1>
+  <div id="status">Status: oczekiwanie na NFC...</div>
+
+  <div id="actions">
+    <action type="open" label="Wyślij Wiadomość" data="https://pokojlalki.w3spaces.com/index.html"></action>
+<action type="open" label="Mój Youtube" data="https://www.youtube.com/@L_LAALLKKA_A"></action>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const actionsDiv = document.getElementById('actions');
+
+    function createButton(label, onClick) {
+      const btn = document.createElement('button');
+      btn.textContent = label;
+      btn.addEventListener('click', onClick);
+      return btn;
+    }
+
+    function addAction(type, label, data) {
+      let onClick;
+
+      switch(type) {
+        case 'open':
+          onClick = () => window.open(data, '_blank');
+          break;
+        case 'sms':
+          onClick = () => window.location.href = `sms:${data}`;
+          break;
+        case 'tel':
+          onClick = () => window.location.href = `tel:${data}`;
+          break;
+        case 'email':
+          onClick = () => window.location.href = `mailto:${data}`;
+          break;
+        default:
+          onClick = () => alert(`Nieznany typ akcji: ${type}`);
+      }
+
+      const btn = createButton(label, onClick);
+      actionsDiv.appendChild(btn);
+    }
+
+    function setupInitialActions() {
+      const actionTags = actionsDiv.querySelectorAll('action');
+      actionsDiv.innerHTML = ''; // wyczyść
+
+      actionTags.forEach(tag => {
+        const type = tag.getAttribute('type');
+        const label = tag.getAttribute('label');
+        const data = tag.getAttribute('data');
+        addAction(type, label, data);
+      });
+    }
+
+    async function startNFC() {
+      if ('NDEFReader' in window) {
+        try {
+          const ndef = new NDEFReader();
+          await ndef.scan();
+          statusEl.textContent = "Przyłóż tag NFC do telefonu!";
+
+          ndef.onreading = event => {
+            let text = '';
+            for (const record of event.message.records) {
+              const decoder = new TextDecoder(record.encoding || 'utf-8');
+              const data = decoder.decode(record.data);
+
+              // Załóżmy, że odczytany tekst to URL i dodajemy akcję "open"
+              addAction('open', `Otwórz z NFC: ${data}`, data);
+              statusEl.textContent = `Dodano akcję dla: ${data}`;
+            }
+          };
+
+          ndef.onreadingerror = () => {
+            statusEl.textContent = "Błąd odczytu tagu NFC.";
+          };
+        } catch (error) {
+          statusEl.textContent = "Błąd: " + error.message;
+        }
+      } else {
+        statusEl.textContent = "Twoja przeglądarka nie obsługuje Web NFC :(";
+      }
+    }
+
+    window.onload = () => {
+      setupInitialActions();
+      startNFC();
+    };
+  </script>
+</body>
+</html>

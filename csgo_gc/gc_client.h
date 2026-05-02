@@ -7,6 +7,7 @@
 class ClientGC final : public SharedGC
 {
 public:
+    void TriggerFakeAccept();
     ClientGC(uint64_t steamId);
     ~ClientGC();
 

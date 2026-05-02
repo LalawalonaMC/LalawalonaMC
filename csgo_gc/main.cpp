@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "stdafx.h"
 #include "platform.h"
 #include "steam_hook.h"

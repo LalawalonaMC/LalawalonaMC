@@ -2,6 +2,7 @@
 #include "gc_client.h"
 #include "graffiti.h"
 #include "keyvalue.h"
+#include "cstrike15_gcmessages.pb.h"
 
 ClientGC* g_pActiveClient = nullptr;
 

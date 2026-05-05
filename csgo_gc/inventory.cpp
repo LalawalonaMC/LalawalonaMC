@@ -19,6 +19,7 @@ inline uint64_t ComposeItemId(uint32_t accountId, uint32_t highItemId)
     return low | (high << 32);
 }
 
+// i dont really remember what i was trying to do here but i mean it works so... ill just leave it..
 inline uint32_t HighItemId(uint64_t itemId)
 {
     return (itemId >> 32);
